@@ -74,13 +74,22 @@ echo [OK] Scribe installed.
 echo.
 
 REM ── Step 6: Install PaddlePaddle ──
-echo [*] Installing PaddlePaddle GPU (CUDA 12.6)...
-echo     ~1GB download, please wait...
-"%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
-if errorlevel 1 (
-    echo [WARNING] GPU version failed. Trying CPU...
-    "%VENV_DIR%\Scripts\pip.exe" install paddlepaddle==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+REM ── Step 6: Detect GPU & Install PaddlePaddle ──
+echo [*] Detecting GPU...
+nvidia-smi >nul 2>&1
+if %errorlevel% equ 0 (
+    echo     GPU detected — installing CUDA 12.6 version (~1GB)...
+    "%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+) else (
+    echo     No GPU found — installing CPU version...
+    "%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
 )
+if errorlevel 1 (
+    echo [ERROR] PaddlePaddle installation failed.
+    pause
+    exit /b 1
+)
+echo [OK] PaddlePaddle installed.
 echo [OK] PaddlePaddle installed.
 echo.
 
