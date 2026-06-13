@@ -1,0 +1,1 @@
+"""Scribe CLI command plugins."""
