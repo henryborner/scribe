@@ -60,8 +60,10 @@ echo [OK] scribe-frame installed.
 echo.
 
 REM ── Step 5: Install Scribe ──
-echo [*] Installing Scribe OCR Toolkit...
-"%VENV_DIR%\Scripts\pip.exe" install -e "%~dp0.."
+echo [*] Installing Scribe OCR Toolkit (with GUI)...
+cd /d "%~dp0.."
+"%VENV_DIR%\Scripts\pip.exe" install -e ".[gui]"
+cd /d "%~dp0"
 if errorlevel 1 (
     echo [ERROR] Installation failed.
     echo Try running: "%VENV_DIR%\Scripts\pip.exe" install -e "%~dp0.."
