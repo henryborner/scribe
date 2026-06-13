@@ -48,7 +48,18 @@ echo [*] Upgrading pip...
 "%VENV_DIR%\Scripts\python.exe" -m pip install --upgrade pip --quiet
 echo.
 
-REM ── Step 4: Install Scribe ──
+REM ── Step 4: Install Scribe Frame (local) ──
+echo [*] Installing scribe-frame...
+"%VENV_DIR%\Scripts\pip.exe" install -e "%~dp0..\..\scribe_frame"
+if errorlevel 1 (
+    echo [ERROR] scribe-frame installation failed.
+    pause
+    exit /b 1
+)
+echo [OK] scribe-frame installed.
+echo.
+
+REM ── Step 5: Install Scribe ──
 echo [*] Installing Scribe OCR Toolkit...
 "%VENV_DIR%\Scripts\pip.exe" install -e "%~dp0.."
 if errorlevel 1 (
@@ -60,7 +71,7 @@ if errorlevel 1 (
 echo [OK] Scribe installed successfully.
 echo.
 
-REM ── Step 5: Verify ──
+REM ── Step 6: Verify ──
 echo [*] Verifying installation...
 "%VENV_DIR%\Scripts\scribe.exe" --help >nul 2>&1
 if errorlevel 1 (
@@ -70,7 +81,7 @@ if errorlevel 1 (
 )
 echo.
 
-REM ── Step 6: Launch ──
+REM ── Step 7: Launch ──
 echo ============================================
 echo   Installation complete!
 echo ============================================
