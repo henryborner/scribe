@@ -74,13 +74,9 @@ echo [OK] Scribe installed.
 echo.
 
 REM ── Step 6: Install PaddlePaddle ──
-echo [*] Installing PaddlePaddle GPU...
-echo     (This may take a few minutes — ~1GB download)
-"%VENV_DIR%\Scripts\pip.exe" install paddlepaddle-gpu -i https://www.paddlepaddle.org.cn/packages/stable/cu126/ --trusted-host www.paddlepaddle.org.cn
-if errorlevel 1 (
-    echo [WARNING] GPU version failed. Trying CPU...
-    "%VENV_DIR%\Scripts\pip.exe" install paddlepaddle
-)
+echo [*] Installing PaddlePaddle (CPU)...
+echo     For GPU support, see: https://www.paddlepaddle.org.cn/
+"%VENV_DIR%\Scripts\pip.exe" install paddlepaddle
 echo [OK] PaddlePaddle installed.
 echo.
 
