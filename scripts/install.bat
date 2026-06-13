@@ -70,10 +70,21 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo [OK] Scribe installed successfully.
+echo [OK] Scribe installed.
 echo.
 
-REM ── Step 6: Verify ──
+REM ── Step 6: Install PaddlePaddle ──
+echo [*] Installing PaddlePaddle GPU...
+echo     (This may take a few minutes — ~1GB download)
+"%VENV_DIR%\Scripts\pip.exe" install paddlepaddle-gpu -i https://www.paddlepaddle.org.cn/packages/stable/cu126/ --trusted-host www.paddlepaddle.org.cn
+if errorlevel 1 (
+    echo [WARNING] GPU version failed. Trying CPU...
+    "%VENV_DIR%\Scripts\pip.exe" install paddlepaddle
+)
+echo [OK] PaddlePaddle installed.
+echo.
+
+REM ── Step 7: Verify ──
 echo [*] Verifying installation...
 "%VENV_DIR%\Scripts\scribe.exe" --help >nul 2>&1
 if errorlevel 1 (
@@ -83,7 +94,7 @@ if errorlevel 1 (
 )
 echo.
 
-REM ── Step 7: Launch ──
+REM ── Step 8: Launch ──
 echo ============================================
 echo   Installation complete!
 echo ============================================
