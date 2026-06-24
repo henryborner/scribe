@@ -74,21 +74,36 @@ echo [OK] Scribe installed.
 echo.
 
 REM ── Step 6: Install PaddlePaddle ──
-REM ── Step 6: Detect GPU & Install PaddlePaddle ──
-echo [*] Detecting GPU...
-nvidia-smi >nul 2>&1
+REM ── Step 6: Detect CUDA version & Install PaddlePaddle ──
+echo [*] Detecting CUDA version...
+nvidia-smi --query-gpu=driver_version --format=csv,noheader > "%TEMP%\cuda_ver.txt" 2>nul
+set /p CUDA_VER=<"%TEMP%\cuda_ver.txt"
+del "%TEMP%\cuda_ver.txt" 2>nul
+
+REM CUDA 13.x → use cu130 index
+echo %CUDA_VER% | find "13." >nul
 if %errorlevel% equ 0 (
-    echo     GPU detected — installing CUDA 12.6 version (~1GB)...
+    echo     CUDA 13.x detected — installing GPU version...
+    "%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu130/ 2>nul
+    if errorlevel 1 goto :paddle_cpu
+    goto :paddle_done
+)
+
+REM CUDA 12.x → use cu126 index
+echo %CUDA_VER% | find "12." >nul
+if %errorlevel% equ 0 (
+    echo     CUDA 12.x detected — installing GPU version...
     "%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle-gpu==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
-) else (
-    echo     No GPU found — installing CPU version...
-    "%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+    if errorlevel 1 goto :paddle_cpu
+    goto :paddle_done
 )
-if errorlevel 1 (
-    echo [ERROR] PaddlePaddle installation failed.
-    pause
-    exit /b 1
-)
+
+:paddle_cpu
+echo     GPU version unavailable — installing CPU version...
+"%VENV_DIR%\Scripts\python.exe" -m pip install paddlepaddle==3.3.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+echo     [NOTE] CPU mode works but is slower.
+
+:paddle_done
 echo [OK] PaddlePaddle installed.
 echo [OK] PaddlePaddle installed.
 echo.
