@@ -12,16 +12,24 @@ from scribe.results.base import StructureResult, Page, Block, BBox, BlockType
 
 
 def _fix_nvidia_dll_path() -> None:
+    """Ensure nvidia CUDA DLLs are findable on Windows."""
     if sys.platform != "win32":
         return
     _venv = os.path.dirname(os.path.dirname(sys.executable))
-    _nvidia_bin = os.path.join(_venv, "Lib", "site-packages", "nvidia", "cu13", "bin", "x86_64")
-    if os.path.isdir(_nvidia_bin) and _nvidia_bin not in os.environ.get("PATH", ""):
-        try:
-            os.add_dll_directory(_nvidia_bin)
-        except AttributeError:
-            pass
-        os.environ["PATH"] = _nvidia_bin + os.pathsep + os.environ.get("PATH", "")
+    _nvidia_base = os.path.join(_venv, "Lib", "site-packages", "nvidia")
+    if os.path.isdir(_nvidia_base):
+        for _entry in os.listdir(_nvidia_base):
+            _pkg_dir = os.path.join(_nvidia_base, _entry)
+            _bin_dir = os.path.join(_pkg_dir, "bin")
+            if os.path.isdir(_bin_dir):
+                for _root, _dirs, _files in os.walk(_bin_dir):
+                    if any(f.endswith(".dll") for f in _files):
+                        if _root not in os.environ.get("PATH", ""):
+                            try:
+                                os.add_dll_directory(_root)
+                            except AttributeError:
+                                pass
+                            os.environ["PATH"] = _root + os.pathsep + os.environ.get("PATH", "")
 
 
 class StructureEngine(BaseEngine):

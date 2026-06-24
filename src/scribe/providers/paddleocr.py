@@ -278,7 +278,16 @@ class PaddleOCRProvider(BaseProvider):
         if self._models is not None:
             return self._models
 
-        # 1) Try remote
+        # 1) Try local cache first (fast, no network)
+        cached = self._load_catalog_cache()
+        if cached is not None:
+            self._models = cached[0]
+            self._catalog_source = cached[1]
+            # Refresh from remote in background (best-effort)
+            self._refresh_remote_async()
+            return self._models
+
+        # 2) Try remote
         models, source = self._fetch_remote_catalog()
         if models:
             self._models = models
@@ -286,17 +295,25 @@ class PaddleOCRProvider(BaseProvider):
             self._save_catalog_cache(models)
             return self._models
 
-        # 2) Try local cache
-        cached = self._load_catalog_cache()
-        if cached is not None:
-            self._models = cached[0]
-            self._catalog_source = cached[1]
-            return self._models
-
         # 3) Fallback: local PaddleX scan
         self._models = _scan_models()
         self._catalog_source = "local"
         return self._models
+
+    def _refresh_remote_async(self) -> None:
+        """Fire-and-forget remote catalog refresh (non-blocking)."""
+        import threading
+        def _refresh():
+            try:
+                models, source = self._fetch_remote_catalog()
+                if models:
+                    self._models = models
+                    self._catalog_source = source
+                    self._save_catalog_cache(models)
+            except Exception:
+                pass
+        t = threading.Thread(target=_refresh, daemon=True)
+        t.start()
 
     def list_engine_types(self) -> list[str]:
         return ["general_ocr", "document_parsing"]
